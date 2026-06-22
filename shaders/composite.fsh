@@ -14,12 +14,18 @@ in vec2 texcoord;
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-const int shadowMapResolution = 2048;
+#define shadwoMapRes 2048 //[1024 2048 3072 4098]
+
+const int shadowMapResolution = shadwoMapRes;
 const float shadowDistanceRenderMul = 1.0;
 
 const bool shadowtex0Nearest = true;
 const bool shadowtex1Nearest = true;
 const bool shadowcolor0Nearest = true;
+
+uniform int heldBlockLightValue;
+uniform int heldBlockLightValue2; // Offhand
+uniform vec3 cameraPosition;
 
 
 uniform sampler2D colortex1;
@@ -145,7 +151,8 @@ void main() {
 
     vec3 blocklight = lightmap.r * blocklightColor;
 	vec3 skylight = lightmap.g * skylightColor;
-	vec3 ambient = ambientColor;
+
+	vec3 ambient = ambientColor * (lightmap.g - 0.2);
 
 	vec3 lightVector = normalize(shadowLightPosition);
 	vec3 worldLightVector = mat3(gbufferModelViewInverse) * lightVector;
@@ -158,24 +165,53 @@ void main() {
 	vec3 NDCPos = vec3(texcoord.xy, depth) * 2.0 - 1.0;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, NDCPos);
 	vec3 feetPlayerPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+
+  
+  vec3 worldPos = feetPlayerPos + cameraPosition;
+
+  
+  float torchDist = length(feetPlayerPos);
+
+  
+  float heldLight =
+      heldBlockLightValue / 8 *
+      max(0.0, 1.0 - torchDist / 12.0);
+
+  
+  heldLight *= heldLight;
+
+  
+  vec3 torchLight = blocklightColor * heldLight * 1.5;
+
+  
+
 	vec3 shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
 
   vec3 sunlightColor = vec3(1.0);
 
-  if (worldTime < 23215 && worldTime > 12785) sunlightColor = vec3(0.1); // Day and Night handling
+  if (worldTime < 23215 && worldTime > 12785){  // Day and Night handling
+    sunlightColor = vec3(0.05);
+    skylight /= 2;
+    ambient /= 2;
+  } 
+  
+
   else sunlightColor = vec3(1.0);
+
   
 
 	vec4 shadowClipPos = shadowProjection * vec4(shadowViewPos, 1.0);
 
-	// note how subsequent conversion code has been moved to the getSoftShadow function
+	
 
 	vec3 shadow = getSoftShadow(shadowClipPos);
 	
 
 	vec3 sunlight = sunlightColor * clamp(dot(worldLightVector, normal), 0.0, 1.0) * shadow;
 
-	color.rgb *= blocklight + skylight + ambient + sunlight;
+  //if(sunlight.r < 10) sunlight.r = -0.1;
+
+	color.rgb *= blocklight + skylight + ambient + sunlight + torchLight;
 
   float sat = 1.2;
 
@@ -184,5 +220,8 @@ void main() {
     
 	//color.rgb = texture(shadowtex0, texcoord).rgb;
 	//color = getNoise(texcoord);
+
+  //color.rg = lightmap;
+  
 }
 
