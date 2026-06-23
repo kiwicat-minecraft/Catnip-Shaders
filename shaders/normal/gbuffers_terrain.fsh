@@ -2,8 +2,9 @@
 
 uniform sampler2D gtexture;
 
-uniform float alphaTestRef = 0.0;
-
+uniform float alphaTestRef = 0.1;
+in float blockId;
+in float fluidId;
 
 in vec2 lmcoord;
 in vec2 texcoord;
@@ -18,16 +19,15 @@ layout(location = 1) out vec4 lightmapData;
 layout(location = 2) out vec4 encodedNormal;
 
 void main() {
-	float alpha = texture(gtexture, texcoord).a;
-
-    color.rgb = texture(gtexture, texcoord).rgb * glcolor.rgb;
-    color.a = alpha;
+	color = texture(gtexture, texcoord) * glcolor; // biome tint
 	if (color.a < alphaTestRef) { // alpha test
 		discard; // don't bother writing
 	}
 
 	lightmapData = vec4(lmcoord, 0.0, 1.0);
 	encodedNormal = vec4(normal * 0.5 + 0.5, 1.0);
-	
-    //color.r = 255;
+	//encodedNormal = vec4(1.0, 0.0, 1.0, 1.0);
+
+    if(fluidId == 1.0) color.r -= 0.2; // lava
+    
 }

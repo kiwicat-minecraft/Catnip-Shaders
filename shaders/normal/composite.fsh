@@ -205,6 +205,16 @@ void main() {
 	
 
 	vec3 shadow = getSoftShadow(shadowClipPos);
+
+  vec4 lmData = texture(colortex1, texcoord);
+
+  
+  float eyeFlag = lmData.a;
+
+  if (eyeFlag < 0.1) {
+    color = texture(colortex0, texcoord);
+    return;
+  }
 	
 
 	vec3 sunlight = sunlightColor * clamp(dot(worldLightVector, normal), 0.0, 1.0) * shadow;
@@ -221,7 +231,10 @@ void main() {
 	//color.rgb = texture(shadowtex0, texcoord).rgb;
 	//color = getNoise(texcoord);
 
+  
+
   //color.rg = lightmap;
+  //color.rgb = normal * 0.5 + 0.5;
   
 }
 
