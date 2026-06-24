@@ -32,6 +32,10 @@ void main() {
 
     if(fluidId == 1.0) color.b += 0.1; // water
 
+	if(blockId == 2000){
+		color.rb += 0.3;
+	}
+
     //color.rgb = vec3(255);
     
 }

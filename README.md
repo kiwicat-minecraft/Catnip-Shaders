@@ -13,3 +13,6 @@ It adds:
 
 ### But what about Kiwi Shader?
 This Shader is basically a KiwiShader V2. I rewrote it because i wanted something way different but with the same goal, to make my Version of Minecraft.
+
+
+This Shader uses code from https://modrinth.com/shader/better-end-portal-shader for the end Portal.

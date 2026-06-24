@@ -5,18 +5,20 @@ uniform sampler2D colortex0;
 #include "/lib/distort.glsl"
 
 // defines the total radius in which we sample (in pixels)
-#define SHADOW_RADIUS 1 // [1 2 3]
+#define SHADOW_RADIUS 1 // [1 2 3] Radius of sampling
 // controls how many samples we take for every pixel we sample
-#define SHADOW_RANGE 4 // [1 2 3 4]
+#define SHADOW_RANGE 4 // [1 2 3 4] Samples per pixel
 
 in vec2 texcoord;
+
+//#define TRANSMODE 
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
-#define shadwoMapRes 2048 //[1024 2048 3072 4098]
 
-const int shadowMapResolution = shadwoMapRes;
+
+const int shadowMapResolution = 2048; // [1024 2048 3072 4098] the Shadow Map Resolution
 const float shadowDistanceRenderMul = 1.0;
 
 const bool shadowtex0Nearest = true;
@@ -227,11 +229,36 @@ void main() {
 
   float gray = dot(color.rgb, vec3(0.3333));
   color.rgb = gray + (color.rgb - gray) * sat;
+
+  //color.rb += 0.05;
+  //color.g -= 0.01;
     
 	//color.rgb = texture(shadowtex0, texcoord).rgb;
 	//color = getNoise(texcoord);
 
   
+  #ifdef TRANSMODE
+    if(texcoord.y < 0.2){
+      color.b += 5;
+      color.rgb += 0.2;
+    }
+    if(texcoord.y < 0.4 && texcoord.y > 0.2){
+      color.r += 5;
+      color.rgb += 0.2;
+    }
+    if(texcoord.y < 0.6 && texcoord.y > 0.4){
+      
+      color.rgb += 0.4;
+    }
+    if(texcoord.y < 0.8 && texcoord.y > 0.6){
+      color.r += 5;
+      color.rgb += 0.2;
+    }
+    if(texcoord.y > 0.8){
+      color.b += 5;
+      color.rgb += 0.2;
+    }
+  #endif
 
   //color.rg = lightmap;
   //color.rgb = normal * 0.5 + 0.5;

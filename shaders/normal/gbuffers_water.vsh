@@ -11,7 +11,9 @@ uniform float viewHeight;
 uniform sampler2D noisetex;
 uniform int worldTime;
 
-#define waveStrength 0.5 //[0.1 0.2 0.3 0.4 0.5 0.75 1 20 200]
+#define waveStrength 0.3 //[0.1 0.2 0.3 0.4 0.5 0.75 1 20 200]
+
+#define portalWaveStrength 1 //[0.1 0.2 0.3 0.4 0.5 0.75 1 20 200]
 
 out float blockId;
 out float fluidId;
@@ -55,6 +57,19 @@ void main() {
             cos(p.z * 0.1 + t * 1.2) * 0.12;
 
         worldPos.y += wave * waveStrength;
+    }
+
+    if (mc_Entity.x == 2000.0) {
+
+        float t = float(worldTime) * 0.025;
+
+        vec3 p = gl_Vertex.xyz;
+
+        float wave =
+            sin(p.x * 0.1 + t) * 0.12 +
+            cos(p.z * 0.1 + t * 1.2) * 0.12;
+
+        worldPos.xy += wave * portalWaveStrength;
     }
 
     gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * worldPos;

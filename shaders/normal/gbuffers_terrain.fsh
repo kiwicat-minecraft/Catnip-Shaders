@@ -29,5 +29,6 @@ void main() {
 	//encodedNormal = vec4(1.0, 0.0, 1.0, 1.0);
 
     if(fluidId == 1.0) color.r -= 0.2; // lava
+
     
 }
