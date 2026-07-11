@@ -19,7 +19,13 @@ void main() {
 
 	color.b = color.b / 1.2;
 
+	float light = lmcoord.x; 
+
+	color.rgb *= light * 0.8 + 0.2;
+
 	/* DRAWBUFFERS:056 */
 	gl_FragData[0] = color; //gcolor
 	gl_FragData[1] = vec4(vec3(gl_FragCoord.z), 1.0);
+
+	
 }

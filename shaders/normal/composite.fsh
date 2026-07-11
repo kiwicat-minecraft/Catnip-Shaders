@@ -3,6 +3,8 @@
 uniform sampler2D colortex0;
 
 #include "/lib/distort.glsl"
+#include "/lib/common.glsl"
+#include "/lib/water.glsl"
 
 // defines the total radius in which we sample (in pixels)
 #define SHADOW_RADIUS 1 // [1 2 3] Radius of sampling
@@ -27,14 +29,11 @@ const bool shadowcolor0Nearest = true;
 
 uniform int heldBlockLightValue;
 uniform int heldBlockLightValue2; // Offhand
-uniform vec3 cameraPosition;
 
-
+uniform sampler2D gcolor;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform vec3 shadowLightPosition;
-uniform mat4 gbufferModelViewInverse;
-uniform sampler2D depthtex0;
 uniform sampler2D noisetex;
 
 uniform int worldTime;
@@ -46,7 +45,6 @@ uniform sampler2D shadowtex0;
 uniform sampler2D shadowtex1;
 uniform sampler2D shadowcolor0;
 
-uniform mat4 gbufferProjectionInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 
@@ -129,6 +127,46 @@ vec3 getSoftShadow(vec4 shadowClipPos){
   }
 
   return shadowAccum / float(samples); // divide sum by count, getting average shadow
+}
+
+
+vec4 waterColor(vec3 color, vec2 texcoord) {
+	vec4 finalColor = vec4(color, 1.0);
+
+  float sat = 1.6;
+  float gray = dot(finalColor.rgb, vec3(0.3333));
+  finalColor.rgb = gray + (finalColor.rgb - gray) * sat;
+
+  
+
+	float depth = getDepth(texcoord);
+	vec3 position = getWorldPosition(texcoord, depth);
+	vec3 normal = WATER_NORMAL;
+	vec3 viewDir = normalize(position);
+	vec3 reflectedDir = normalize(reflect(viewDir, normal));
+  //viewDir = normalize(-position);
+  //float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0);
+  //fresnel = mix(0.02, 1.0, fresnel);
+
+  
+
+	vec2 reflectionUV = raytrace(position, reflectedDir);
+	if (reflectionUV.x > 0.0) {
+		if (texture2D(colortex6, reflectionUV).r < 0.1) { // remove clouds
+			vec3 reflectionColor = texture2D(gcolor, reflectionUV).rgb;
+      reflectionColor = mix(
+          reflectionColor,
+          vec3(0.25,0.45,0.8),
+          0.15
+      );
+			finalColor.rgb = mix(finalColor.rgb, reflectionColor,  0.4);
+      vec3 waterTint = vec3(0.05, 0.18, 0.30);
+
+      finalColor.rgb *= waterTint * 1.3;
+		}
+	}
+
+	return finalColor;
 }
 
 
@@ -236,6 +274,9 @@ void main() {
 	//color.rgb = texture(shadowtex0, texcoord).rgb;
 	//color = getNoise(texcoord);
 
+  if (isWater(texcoord) && isEyeInWater == 0)
+		color = waterColor(color.rgb, texcoord);
+
   
   #ifdef TRANSMODE
     if(texcoord.y < 0.2){
@@ -264,4 +305,6 @@ void main() {
   //color.rgb = normal * 0.5 + 0.5;
   
 }
+
+
 
